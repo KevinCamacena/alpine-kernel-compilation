@@ -38,7 +38,7 @@ Create a build directory, extract the kernel sources, and clone the configuratio
 
 ```bash
 # Check for kernel versions here: https://github.com/torvalds/linux/tags
-wget -qO- https://github.com/torvalds/linux/releases/tag/v7.0-rc6
+wget -qO- https://github.com/torvalds/linux/archive/refs/tags/v7.0-rc6.tar.gz
 # Set up directories and extract sources
 mkdir -p ~/.build-rc
 tar -xf v7.0-rc6.tar.gz -C ~/.build-rc/
