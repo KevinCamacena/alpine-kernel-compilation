@@ -38,7 +38,7 @@ Create a build directory, extract the kernel sources, and clone the configuratio
 
 ```bash
 # Check for kernel versions here: https://github.com/torvalds/linux/tags
-wget -qO- https://github.com/torvalds/linux/archive/refs/tags/v7.0-rc6.tar.gz
+wget -qO https://github.com/torvalds/linux/archive/refs/tags/v7.0-rc6.tar.gz
 # Set up directories and extract sources
 mkdir -p ~/.build-rc
 tar -xf v7.0-rc6.tar.gz -C ~/.build-rc/
@@ -92,6 +92,7 @@ doas cp .config /boot/config-7.0.0-rc6
 ```
 
 ## Step 5: Bootloader Configuration (Syslinux/Extlinux)
+
 Alpine requires generating an initial ramdisk (initramfs) for the new modules and manually adding the boot entry to extlinux.conf.
 
 1. Generate the Initramfs
@@ -146,3 +147,38 @@ doas reboot
 # After reboot, confirm the running version
 fastfetch
 ```
+
+---
+
+## Troubleshooting
+
+### Anomalous Compilation Errors (Bit Flips)
+
+When downloading, extracting, or compiling large codebases in memory, cosmic rays or minor hardware fluctuations can occasionally cause a single-bit flip. This manifests as highly specific "undeclared identifier" errors in the compiler output due to a sudden typo in the source code.
+
+#### Example Error
+
+```
+./include/linux/gfp.h:133:44: error: 'GFP_ZONMS_SHIFT' undeclared (first use in this function); did you mean 'GFP_ZONES_SHIFT'
+```
+
+#### Resolution
+
+Do not scrap the build directory or start over. The core build process is likely intact.
+
+1. Identify the speciOnce the build completes successfully, proceed directly to Step 4: Installation.fic file and typo from the compiler's error output.
+
+2. Use sed to patch the flipped bit in the affected source file:
+
+```bash
+# Example fix for the specific error above
+sed -i 's/GFP_ZONMS_SHIFT/GFP_ZONES_SHIFT/g' include/linux/gfp.h`
+```
+
+3. Resume the compilation. The make command will automatically pick up where it left off and only rebuild the dependencies for the patched file:
+
+```bash
+make -j$(nproc)
+```
+
+4. Once the build completes successfully, proceed directly to Step 4: Installation.
